@@ -31,54 +31,56 @@ import MealItem from './MealItem';
 //   ];
 
 const AvailableMeals = props => {
-  const [DUMMY_MEALS, setDUMMY_MEAlS]= useState([])
-  const [isLoading, setIsLoading]= useState(true)
-  const [error, setError]= useState(null)
+  const [meals, setMeals] = useState([])
+  const [isLoading, setIsLoading] =  useState(true)
+  const [httpError, setHttpError] = useState(null)
   useEffect(()=> {
-    async function fetchData() {
-      try{
-        const response = await fetch('https://react-test-aefc2-default-rtdb.firebaseio.com/meals.json');
-        console.log(response.ok)
-        const data = await response.json()
-        if(!data) {
-          throw new Error('Request failed')
-        }
-        console.log(data)
-        const loadMeals = [];
-    for (const key in data){
-      loadMeals.push({
+    const fetchMeals = async() => {
+    const response = await fetch('https://react-test-aefc2-default-rtdb.firebaseio.com/meals.json')
+
+    if(!response.ok){
+      throw new Error('something went wrong')
+    }
+    const data = await response.json()  
+
+    const loadedMeals= [];
+    for(const key in data){
+      loadedMeals.push({
         id:key,
         name:data[key].name,
         description:data[key].description,
-        price:data[key].price,
+        price:data[key].price
       })
     }
-    
-    setDUMMY_MEAlS(loadMeals);
+    setMeals(loadedMeals)
     setIsLoading(false)
-    setError(null)
-      }catch(err){
-        setError(err.message)
-        setIsLoading(false)
-        console.log(err.message)
-      }
-      
-    }
-    fetchData();
-    
-  },[])
-  if(isLoading){
-    return (<section className={classes.mealsLoading}>
-      <p>is loading ....</p>
-    </section>);
   }
-  if(error) {
-    return (<section className={classes.mealsError}>
-      <p>{error}</p>
-    </section>);
+
+
+      fetchMeals().catch((err) => {
+        setIsLoading(false)
+        setHttpError(err.message)
+      })
+  
+ 
+  },[])
+  if (isLoading){
+    return (
+      <section className={classes.mealsLoading}>
+        <p>is loading .....</p>
+      </section>
+    )
+  }
+
+  if(httpError){
+    return (
+      <section className={classes.mealsError}>
+        <p>{httpError}</p>
+      </section>
+    )
   }
     console.log('test')
-    const mealList = DUMMY_MEALS.map(meal => <MealItem id={meal.id} key={meal.id} name={meal.name} description={meal.description} price ={meal.price}/>);
+    const mealList = meals.map(meal => <MealItem id={meal.id} key={meal.id} name={meal.name} description={meal.description} price ={meal.price}/>);
     return <section className={classes.meals}>
         <Card>
             <ul>
